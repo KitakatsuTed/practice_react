@@ -1,4 +1,4 @@
-import {Cart, Product} from "../entities";
+import {Cart} from "../entities";
 import React, {useEffect, useState} from 'react'
 import {useRecoilState} from "recoil";
 import {productsState} from "../atom/Products";
