@@ -1,6 +1,17 @@
 import { Notification } from "../entities";
+import {Dispatch, SetStateAction, useEffect} from "react";
 
-export default function Notifications({notifications: notifications}: {notifications: Notification[]}) {
+export default function Notifications({notifications, setNotifications}: {notifications: Notification[], setNotifications: Dispatch<SetStateAction<Notification[]>>}) {
+
+  useEffect( () => {
+    const interval = setInterval(() => {
+      setNotifications([])
+    }, 1000 * 5)
+
+    return () => { clearInterval(interval) }
+  } , [notifications])
+
+
   return (
     <div>
       {

@@ -24,9 +24,7 @@ function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number)
   )
 }
 
-export default function Bank() {
-  const [time, setTime] = useState<number>(0)
-  const timeRef: React.MutableRefObject<number> = useRef(time)
+export default function Bank({timeRef}: {timeRef: React.MutableRefObject<number>}) {
   const bankMoneyAmount: React.MutableRefObject<number> = useRef<number>(5000)
   const [errors, setErrors] = useState<string[]>([])
   const walletRef: React.MutableRefObject<number> = useRef<number>(1000)
@@ -63,38 +61,12 @@ export default function Bank() {
     return messages.length === 0
   }
 
-  function clockUp(timeRef: React.MutableRefObject<number>): React.MutableRefObject<number> {
-    if (timeRef.current >= 23) {
-      timeRef.current = 0
-      return timeRef
-    }
-
-    timeRef.current += 1
-    return timeRef
-  }
-
-  function getTimeStr(hourNum: number): string {
-    if (hourNum < 12) {
-      return `AM ${hourNum}:00`
-    }
-    return `PM ${hourNum - 12}:00`
-  }
-
-  function openStatusBank(hourNum: number): string {
+  function openStatusBank(): string {
     if (timeRef.current < 9 || timeRef.current > 18) {
       return '閉店'
     }
     return '開店'
   }
-
-  useEffect( () => {
-      const interval = setInterval( () => {
-        return setTime(clockUp(timeRef).current)
-      }, 1000)
-
-      return () => { clearInterval(interval) }
-    }, [time]
-  )
 
   return(
     <div>
@@ -107,10 +79,11 @@ export default function Bank() {
         })}
       </ul>
       <span>
-        現時刻:{getTimeStr(timeRef.current)} {openStatusBank(timeRef.current)}
+        {openStatusBank}
       </span>
       <div>
         <span>銀行残高:{bankMoneyAmount.current}</span>
+        <br/>
         <span>お財布:{bankAccount.amount}</span>
         <MoneyInput withdrawProcess={withdraw} />
       </div>
