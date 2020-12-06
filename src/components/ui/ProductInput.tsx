@@ -6,6 +6,7 @@ import {productsState} from "../atom/Products";
 export default function ProductInput({setNotifications: setNotifications}: {setNotifications: any}) {
   const [products, setProducts] = useRecoilState(productsState);
   const [product, setProduct] = useState<Product>({name: '', price: 0})
+  // このstateは他でも同じような使われ方＋管理のされ方のなのでコンポーネントとして共通化の余地ありというかしたい
   const [errors, setErrors] = useState<string[]>([])
   const [amount, setAmount] = useState<number>(0)
 

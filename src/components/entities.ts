@@ -17,3 +17,7 @@ export enum NotificationKind {
   NOTICE = "notice",
   ALERT = "alert"
 }
+
+export interface BankAccount {
+  amount: number
+}
