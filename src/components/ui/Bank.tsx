@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 import {BankAccount} from "../entities";
 import Clock from "../lib/Clock";
 
@@ -49,7 +49,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
   const withdrawValidate = (withdrawMoney: number) => {
     let messages: string[] = []
 
-    if (clockRef.current.hour < 9 || clockRef.current.hour > 18) {
+    if (clockRef.current.isDaytime()) {
       messages = [...messages, '銀行はしまっています']
     }
 
@@ -63,7 +63,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
   }
 
   function openStatusBank(): string {
-    if (clockRef.current.hour < 9 || clockRef.current.hour > 18) {
+    if (clockRef.current.isDaytime()) {
       return '閉店'
     }
     return '開店'
