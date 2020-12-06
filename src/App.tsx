@@ -6,15 +6,11 @@ import Notifications from "./components/ui/Notifications";
 import { Notification } from "./components/entities";
 import Bank from "./components/ui/Bank";
 import CurrentTime from "./components/ui/CurrentTime";
+import Clock from "./components/lib/Clock";
 
 function App() {
-  interface Clock {
-    hour: number
-
-  }
-
   const [notifications, setNotifications] = useState<Notification[]>([])
-  const timeRef: React.MutableRefObject<number> = useRef(0)
+  const clockRef: React.MutableRefObject<Clock> = useRef(Clock.Instance)
 
   return (
     <div className="App">
@@ -22,13 +18,13 @@ function App() {
         <Notifications notifications={notifications} setNotifications={setNotifications} />
       </div>
       <div>
-        <CurrentTime timeRef={timeRef}/>
+        <CurrentTime clockRef={clockRef}/>
       </div>
       <div>
         <ProductInput setNotifications={setNotifications} />
         <CartContent setNotifications={setNotifications} />
       </div>
-      <Bank timeRef={timeRef}/>
+      <Bank clockRef={clockRef}/>
     </div>
   );
 }

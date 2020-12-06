@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {BankAccount} from "../entities";
+import Clock from "../lib/Clock";
 
 function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number) => boolean}) {
   const [inputMoney, setInputMoney] = useState<number>(0)
@@ -24,7 +25,7 @@ function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number)
   )
 }
 
-export default function Bank({timeRef}: {timeRef: React.MutableRefObject<number>}) {
+export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock>}) {
   const bankMoneyAmount: React.MutableRefObject<number> = useRef<number>(5000)
   const [errors, setErrors] = useState<string[]>([])
   const walletRef: React.MutableRefObject<number> = useRef<number>(1000)
@@ -48,7 +49,7 @@ export default function Bank({timeRef}: {timeRef: React.MutableRefObject<number>
   const withdrawValidate = (withdrawMoney: number) => {
     let messages: string[] = []
 
-    if (timeRef.current < 9 || timeRef.current > 18) {
+    if (clockRef.current.hour < 9 || clockRef.current.hour > 18) {
       messages = [...messages, '銀行はしまっています']
     }
 
@@ -62,7 +63,7 @@ export default function Bank({timeRef}: {timeRef: React.MutableRefObject<number>
   }
 
   function openStatusBank(): string {
-    if (timeRef.current < 9 || timeRef.current > 18) {
+    if (clockRef.current.hour < 9 || clockRef.current.hour > 18) {
       return '閉店'
     }
     return '開店'

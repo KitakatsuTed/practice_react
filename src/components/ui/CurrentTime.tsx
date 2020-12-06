@@ -1,16 +1,17 @@
 import React, {useEffect, useRef, useState} from "react";
+import Clock from "../lib/Clock";
 
-export default function CurrentTime({timeRef}: {timeRef: React.MutableRefObject<number>}) {
+export default function CurrentTime({clockRef}: {clockRef: React.MutableRefObject<Clock>}) {
   const [time, setTime] = useState<number>(0)
 
-  function clockUp(timeRef: React.MutableRefObject<number>): React.MutableRefObject<number> {
-    if (timeRef.current >= 23) {
-      timeRef.current = 0
-      return timeRef
+  function clockUp(clockRef: React.MutableRefObject<Clock>): React.MutableRefObject<Clock> {
+    if (clockRef.current.hour >= 23) {
+      clockRef.current.hour = 0
+      return clockRef
     }
 
-    timeRef.current += 1
-    return timeRef
+    clockRef.current.hour += 1
+    return clockRef
   }
 
   function getTimeStr(hourNum: number): string {
@@ -22,7 +23,7 @@ export default function CurrentTime({timeRef}: {timeRef: React.MutableRefObject<
 
   useEffect( () => {
       const interval = setInterval( () => {
-        return setTime(clockUp(timeRef).current)
+        return setTime(clockUp(clockRef).current.hour)
       }, 1000)
 
       return () => { clearInterval(interval) }
@@ -31,7 +32,7 @@ export default function CurrentTime({timeRef}: {timeRef: React.MutableRefObject<
 
   return(
     <div>
-      現時刻：{getTimeStr(timeRef.current)}
+      現時刻：{getTimeStr(clockRef.current.hour)}
     </div>
   )
 }
