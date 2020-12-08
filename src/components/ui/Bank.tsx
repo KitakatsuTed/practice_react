@@ -37,8 +37,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
     return setBankAccount({amount: walletRef.current += withdrawMoney})
   }
 
-  // ここの戻り値の型を揃えたい。もうなんでも型を揃えたい
-  const withdraw = (withdrawMoney: number) => {
+  const withdraw: (withdrawMoney: number) => boolean = (withdrawMoney: number) => {
     if (withdrawValidate(withdrawMoney)) {
       transactionMoney(withdrawMoney)
       return true
