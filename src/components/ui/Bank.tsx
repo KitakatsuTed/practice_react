@@ -10,6 +10,7 @@ enum WithdrawStatus {
 
 interface WithdrawContext {
   status: WithdrawStatus
+  process: () => void
 }
 
 function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number) => boolean}) {
@@ -41,7 +42,6 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
   const [errors, setErrors] = useState<string[]>([])
   const walletRef: React.MutableRefObject<number> = useRef<number>(1000)
   const [bankAccount, setBankAccount] = useState<BankAccount>({amount: walletRef.current})
-  const [withdrawContext, setWithdrawContext] = useState<WithdrawContext>({status: WithdrawStatus.NOT_DOING})
 
   // ここbankAccountの状態に依存しているから引き剥がしたい
   function transactionMoney(withdrawMoney: number) {
@@ -83,32 +83,21 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
   const reducer = (state: WithdrawContext, action: any) => {
     switch (action.type) {
       case WithdrawStatus.NOT_DOING:
-        return({...state, status: WithdrawStatus.DOING})
+        return({...state, status: WithdrawStatus.DOING, process: abort})
       case WithdrawStatus.DOING:
-        return({...state, status: WithdrawStatus.DONE})
+        return({...state, status: WithdrawStatus.DONE, process: abort})
       case WithdrawStatus.DONE:
-        return({...state, status: WithdrawStatus.NOT_DOING})
+        return({...state, status: WithdrawStatus.NOT_DOING, process: abort})
       default:
         throw new Error(`unknown action type: ${action.type}`)
     }
   }
 
-  const [state, dispatch] = useReducer(reducer, withdrawContext)
-  const startDispatch = () => {
-    return dispatch({ type: state.status })
+  const abort = () => {
+    console.log(state)
+    return
   }
-
-  function hoge(state: WithdrawContext) {
-    if (state.status === WithdrawStatus.NOT_DOING) {
-      return(<div>a</div>)
-    }
-    if (state.status === WithdrawStatus.DOING) {
-      return(<div>b</div>)
-    }
-    if (state.status === WithdrawStatus.DONE) {
-      return(<div>c</div>)
-    }
-  }
+  const [state, dispatch] = useReducer(reducer, {status: WithdrawStatus.NOT_DOING, process: abort})
 
   useEffect( () => {
     const interval = setInterval( () => {
@@ -122,9 +111,6 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
 
   return(
     <div>
-      <button onClick={startDispatch}>aaaa</button>
-      {hoge(state)}
-      <br/>
       <ul>
         {errors.map((error, index) => {
           return (
