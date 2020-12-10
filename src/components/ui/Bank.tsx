@@ -49,6 +49,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
 
   const withdraw: (withdrawMoney: number) => boolean = (withdrawMoney: number) => {
     if (withdrawValidate(withdrawMoney)) {
+      dispatch({type: withdrawState.status})
       transactionMoney(withdrawMoney)
       return true
     }
@@ -66,17 +67,14 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
       messages = [...messages, '限度額を超えています']
     }
 
+    if (withdrawState.status !== WithdrawStatus.READY) {
+      messages = [...messages, '引き出し処理が終わるまでお待ちください']
+    }
+
     setErrors(messages)
 
     return messages.length === 0
   }
-
-  // function openStatusBank() {
-  //   if (clockRef.current.isDaytime()) {
-  //     return(<span>閉店</span>)
-  //   }
-  //   return(<span>開店</span>)
-  // }
 
   const reducer = (state: WithdrawContext, action: any) => {
     switch (action.type) {
@@ -91,17 +89,30 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
     }
   }
 
-  const [state, dispatch] = useReducer(reducer, {status: WithdrawStatus.READY})
+  const [withdrawState, dispatch] = useReducer(reducer, {status: WithdrawStatus.READY})
+
+  const processStatus = () => {
+    if (withdrawState.status === WithdrawStatus.READY) {
+      return '引き出し可能'
+    }
+    if (withdrawState.status === WithdrawStatus.DOING) {
+      return '引き出し中...'
+    }
+    if (withdrawState.status === WithdrawStatus.DONE) {
+      return '引き出し完了...準備中'
+    }
+  }
 
   useEffect( () => {
+    console.log(withdrawState.status)
     const interval = setInterval( () => {
-      if (state.status !== WithdrawStatus.READY) {
-        dispatch({ type: state.status })
+      if (withdrawState.status !== WithdrawStatus.READY) {
+        dispatch({ type: withdrawState.status })
       }
     }, 1000 * 5)
 
     return () => { clearInterval(interval) }
-  }, [state])
+  }, [withdrawState])
 
   return(
     <div>
@@ -112,11 +123,12 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
           )
         })}
       </ul>
-      {/*{openStatusBank}*/}
       <div>
         <span>銀行残高:{bankMoneyAmount.current}</span>
         <br/>
         <span>お財布:{bankAccount.amount}</span>
+        <br/>
+        <span>{processStatus()}</span>
         <MoneyInput withdrawProcess={withdraw} />
       </div>
     </div>
