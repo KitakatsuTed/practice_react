@@ -1,7 +1,7 @@
 import './App.css';
 import ProductInput from "./components/ui/ProductInput";
 import CartContent from "./components/ui/CartContent";
-import React, {useEffect, useRef, useState} from 'react'
+import React, {useRef, useState} from 'react'
 import Notifications from "./components/ui/Notifications";
 import { Notification } from "./components/entities";
 import Bank from "./components/ui/Bank";

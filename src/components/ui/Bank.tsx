@@ -3,14 +3,13 @@ import {BankAccount} from "../entities";
 import Clock from "../lib/Clock";
 
 enum WithdrawStatus {
-  NOT_DOING = 'not_doing',
+  READY = 'ready',
   DOING = 'doing',
   DONE = 'done'
 }
 
 interface WithdrawContext {
   status: WithdrawStatus
-  process: () => void
 }
 
 function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number) => boolean}) {
@@ -21,8 +20,7 @@ function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number)
     setInputMoney(Number(e.target.value))
   }
 
-  const onClickTransaction = (e: React
-    .MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onClickTransaction = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if(withdrawProcess(inputMoney)) {
       return setInputMoney(0)
     }
@@ -73,35 +71,31 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
     return messages.length === 0
   }
 
-  function openStatusBank(): string {
-    if (clockRef.current.isDaytime()) {
-      return '閉店'
-    }
-    return '開店'
-  }
+  // function openStatusBank() {
+  //   if (clockRef.current.isDaytime()) {
+  //     return(<span>閉店</span>)
+  //   }
+  //   return(<span>開店</span>)
+  // }
 
   const reducer = (state: WithdrawContext, action: any) => {
     switch (action.type) {
-      case WithdrawStatus.NOT_DOING:
-        return({...state, status: WithdrawStatus.DOING, process: abort})
+      case WithdrawStatus.READY:
+        return({...state, status: WithdrawStatus.DOING})
       case WithdrawStatus.DOING:
-        return({...state, status: WithdrawStatus.DONE, process: abort})
+        return({...state, status: WithdrawStatus.DONE})
       case WithdrawStatus.DONE:
-        return({...state, status: WithdrawStatus.NOT_DOING, process: abort})
+        return({...state, status: WithdrawStatus.READY})
       default:
         throw new Error(`unknown action type: ${action.type}`)
     }
   }
 
-  const abort = () => {
-    console.log(state)
-    return
-  }
-  const [state, dispatch] = useReducer(reducer, {status: WithdrawStatus.NOT_DOING, process: abort})
+  const [state, dispatch] = useReducer(reducer, {status: WithdrawStatus.READY})
 
   useEffect( () => {
     const interval = setInterval( () => {
-      if (state.status !== WithdrawStatus.NOT_DOING) {
+      if (state.status !== WithdrawStatus.READY) {
         dispatch({ type: state.status })
       }
     }, 1000 * 5)
@@ -118,9 +112,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
           )
         })}
       </ul>
-      <span>
-        {openStatusBank}
-      </span>
+      {/*{openStatusBank}*/}
       <div>
         <span>銀行残高:{bankMoneyAmount.current}</span>
         <br/>
