@@ -10,6 +10,12 @@ enum WithdrawStatus {
 
 interface WithdrawContext {
   status: WithdrawStatus
+  withdrawMoney: number
+}
+
+interface dispatchContext {
+  type: WithdrawStatus
+  transactionMoney: number
 }
 
 function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number) => boolean}) {
@@ -29,7 +35,7 @@ function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number)
 
   return(
     <div>
-      <input type="number" onChange={updateInput} value={inputMoney}/>
+      <input type="number" step="100" onChange={updateInput} value={inputMoney}/>円
       <button onClick={onClickTransaction}>引き出す</button>
     </div>
   )
@@ -49,8 +55,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
 
   const withdraw: (withdrawMoney: number) => boolean = (withdrawMoney: number) => {
     if (withdrawValidate(withdrawMoney)) {
-      dispatch({type: withdrawState.status})
-      transactionMoney(withdrawMoney)
+      dispatch({type: withdrawState.status, transactionMoney: withdrawMoney})
       return true
     }
     return false
@@ -76,40 +81,42 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
     return messages.length === 0
   }
 
-  const reducer = (state: WithdrawContext, action: any) => {
-    switch (action.type) {
-      case WithdrawStatus.READY:
-        return({...state, status: WithdrawStatus.DOING})
-      case WithdrawStatus.DOING:
-        return({...state, status: WithdrawStatus.DONE})
-      case WithdrawStatus.DONE:
-        return({...state, status: WithdrawStatus.READY})
-      default:
-        throw new Error(`unknown action type: ${action.type}`)
-    }
-  }
-
-  const [withdrawState, dispatch] = useReducer(reducer, {status: WithdrawStatus.READY})
-
   const processStatus = () => {
     if (withdrawState.status === WithdrawStatus.READY) {
       return '引き出し可能'
     }
     if (withdrawState.status === WithdrawStatus.DOING) {
-      return '引き出し中...'
+      return `${withdrawState.withdrawMoney}円を引き出し中...`
     }
     if (withdrawState.status === WithdrawStatus.DONE) {
-      return '引き出し完了...準備中'
+      return '引き出し完了/再開準備中...'
     }
   }
 
+  const reducer = (state: WithdrawContext, action: dispatchContext) => {
+    switch (action.type) {
+      case WithdrawStatus.READY:
+        return({...state, status: WithdrawStatus.DOING, withdrawMoney: action.transactionMoney})
+      case WithdrawStatus.DOING:
+        return({...state, status: WithdrawStatus.DONE, withdrawMoney: action.transactionMoney})
+      case WithdrawStatus.DONE:
+        return({...state, status: WithdrawStatus.READY, withdrawMoney: 0})
+      default:
+        throw new Error(`unknown action type: ${action.type}`)
+    }
+  }
+
+  const [withdrawState, dispatch] = useReducer(reducer, {status: WithdrawStatus.READY, withdrawMoney: 0})
+
   useEffect( () => {
-    console.log(withdrawState.status)
+    if (withdrawState.status === WithdrawStatus.DONE) {
+      transactionMoney(withdrawState.withdrawMoney)
+    }
     const interval = setInterval( () => {
       if (withdrawState.status !== WithdrawStatus.READY) {
-        dispatch({ type: withdrawState.status })
+        dispatch({ type: withdrawState.status, transactionMoney: withdrawState.withdrawMoney })
       }
-    }, 1000 * 5)
+    }, 1000 * 3)
 
     return () => { clearInterval(interval) }
   }, [withdrawState])
