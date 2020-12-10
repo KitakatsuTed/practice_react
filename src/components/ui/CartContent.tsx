@@ -4,7 +4,7 @@ import {useRecoilState} from "recoil";
 import {productsState} from "../atom/Products";
 
 export default function CartContent({setNotifications: setNotification}: {setNotifications: any}) {
-  const [productName, setProductName] = useState<string>()
+  const [productName, setProductName] = useState<string>('')
   const [cart, setCart] = useState<Cart>({products: [], amount: 0})
   const [products, setProducts] = useRecoilState(productsState);
   const [errors, setErrors] = useState<string[]>([])
@@ -35,6 +35,11 @@ export default function CartContent({setNotifications: setNotification}: {setNot
     return 0
   }
 
+  function purchase (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    setCart({ products: [], amount: 0 })
+    return
+  }
+
   const findProductFromProducts = () => {
     return products.find(p => p.name === productName)
   }
@@ -60,7 +65,7 @@ export default function CartContent({setNotifications: setNotification}: {setNot
       <input type="text" onChange={updateProductName} value={productName}/>
       <button onClick={addToCart}>カートに入れる</button>
       <div>
-        <span>カート</span>
+        <span>カート: 合計{cart.amount}円</span>
         <table>
           <thead>
           <tr>
@@ -77,6 +82,9 @@ export default function CartContent({setNotifications: setNotification}: {setNot
           })}
           </tbody>
         </table>
+        <div>
+          <button onClick={purchase}>購入</button>
+        </div>
       </div>
     </div>
   )
