@@ -2,20 +2,20 @@ import React, {useRef, useState, useReducer, useEffect} from "react";
 import {BankAccount} from "../entities";
 import Clock from "../lib/Clock";
 
-enum WithdrawStatus {
+enum ProcessStatus {
   READY = 'ready',
   DOING = 'doing',
   DONE = 'done'
 }
 
 interface WithdrawContext {
-  status: WithdrawStatus
+  status: ProcessStatus
   withdrawMoney: number
 }
 
 interface dispatchContext {
-  type: WithdrawStatus
-  transactionMoney: number
+  type: ProcessStatus
+  inputMoney: number
 }
 
 function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number) => boolean}) {
@@ -55,7 +55,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
 
   const withdraw: (withdrawMoney: number) => boolean = (withdrawMoney: number) => {
     if (withdrawValidate(withdrawMoney)) {
-      dispatch({type: withdrawState.status, transactionMoney: withdrawMoney})
+      dispatch({type: withdrawContext.status, inputMoney: withdrawMoney})
       return true
     }
     return false
@@ -72,7 +72,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
       messages = [...messages, '限度額を超えています']
     }
 
-    if (withdrawState.status !== WithdrawStatus.READY) {
+    if (withdrawContext.status !== ProcessStatus.READY) {
       messages = [...messages, '引き出し処理が終わるまでお待ちください']
     }
 
@@ -82,44 +82,44 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
   }
 
   const processStatus = () => {
-    if (withdrawState.status === WithdrawStatus.READY) {
+    if (withdrawContext.status === ProcessStatus.READY) {
       return '引き出し可能'
     }
-    if (withdrawState.status === WithdrawStatus.DOING) {
-      return `${withdrawState.withdrawMoney}円を引き出し中...`
+    if (withdrawContext.status === ProcessStatus.DOING) {
+      return `${withdrawContext.withdrawMoney}円を引き出し中...`
     }
-    if (withdrawState.status === WithdrawStatus.DONE) {
+    if (withdrawContext.status === ProcessStatus.DONE) {
       return '引き出し完了/再開準備中...'
     }
   }
 
   const reducer = (state: WithdrawContext, action: dispatchContext) => {
     switch (action.type) {
-      case WithdrawStatus.READY:
-        return({...state, status: WithdrawStatus.DOING, withdrawMoney: action.transactionMoney})
-      case WithdrawStatus.DOING:
-        return({...state, status: WithdrawStatus.DONE, withdrawMoney: action.transactionMoney})
-      case WithdrawStatus.DONE:
-        return({...state, status: WithdrawStatus.READY, withdrawMoney: 0})
+      case ProcessStatus.READY:
+        return({...state, status: ProcessStatus.DOING, withdrawMoney: action.inputMoney})
+      case ProcessStatus.DOING:
+        return({...state, status: ProcessStatus.DONE})
+      case ProcessStatus.DONE:
+        return({...state, status: ProcessStatus.READY, withdrawMoney: 0})
       default:
         throw new Error(`unknown action type: ${action.type}`)
     }
   }
 
-  const [withdrawState, dispatch] = useReducer(reducer, {status: WithdrawStatus.READY, withdrawMoney: 0})
+  const [withdrawContext, dispatch] = useReducer(reducer, {status: ProcessStatus.READY, withdrawMoney: 0})
 
   useEffect( () => {
-    if (withdrawState.status === WithdrawStatus.DONE) {
-      transactionMoney(withdrawState.withdrawMoney)
+    if (withdrawContext.status === ProcessStatus.DONE) {
+      transactionMoney(withdrawContext.withdrawMoney)
     }
     const interval = setInterval( () => {
-      if (withdrawState.status !== WithdrawStatus.READY) {
-        dispatch({ type: withdrawState.status, transactionMoney: withdrawState.withdrawMoney })
+      if (withdrawContext.status !== ProcessStatus.READY) {
+        dispatch({ type: withdrawContext.status, inputMoney: withdrawContext.withdrawMoney })
       }
     }, 1000 * 3)
 
     return () => { clearInterval(interval) }
-  }, [withdrawState])
+  }, [withdrawContext])
 
   return(
     <div>
