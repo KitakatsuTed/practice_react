@@ -1,5 +1,4 @@
-import React, {useRef, useState, useReducer, useEffect} from "react";
-import {BankAccount} from "../entities";
+import React, {useRef, useState, useReducer, useEffect, SetStateAction, Dispatch} from "react";
 import Clock from "../lib/Clock";
 
 enum ProcessStatus {
@@ -41,16 +40,14 @@ function MoneyInput({withdrawProcess}: {withdrawProcess: (withdrawMoney: number)
   )
 }
 
-export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock>}) {
+export default function Bank({clockRef, wallet, setWallet}: {clockRef: React.MutableRefObject<Clock>, wallet: number, setWallet: Dispatch<SetStateAction<number>>}) {
   const bankMoneyAmount: React.MutableRefObject<number> = useRef<number>(5000)
   const [errors, setErrors] = useState<string[]>([])
-  const walletRef: React.MutableRefObject<number> = useRef<number>(1000)
-  const [bankAccount, setBankAccount] = useState<BankAccount>({amount: walletRef.current})
 
   // ここbankAccountの状態に依存しているから引き剥がしたい
   function transactionMoney(withdrawMoney: number) {
     bankMoneyAmount.current -= withdrawMoney
-    return setBankAccount({amount: walletRef.current += withdrawMoney})
+    return setWallet(wallet += withdrawMoney)
   }
 
   const withdraw: (withdrawMoney: number) => boolean = (withdrawMoney: number) => {
@@ -133,7 +130,7 @@ export default function Bank({clockRef}: {clockRef: React.MutableRefObject<Clock
       <div>
         <span>銀行残高:{bankMoneyAmount.current}</span>
         <br/>
-        <span>お財布:{bankAccount.amount}</span>
+        <span>お財布:{wallet}</span>
         <br/>
         <span>{processStatus()}</span>
         <MoneyInput withdrawProcess={withdraw} />

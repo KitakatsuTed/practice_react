@@ -1,9 +1,9 @@
 import {Cart} from "../entities";
-import React, {useEffect, useState} from 'react'
+import React, {Dispatch, SetStateAction, useEffect, useState} from 'react'
 import {useRecoilState} from "recoil";
 import {productsState} from "../atom/Products";
 
-export default function CartContent({setNotifications: setNotification}: {setNotifications: any}) {
+export default function CartContent({setNotifications: setNotification, wallet: wallet, setWallet: setWallet}: {setNotifications: any, wallet: number, setWallet: Dispatch<SetStateAction<number>>}) {
   const [productName, setProductName] = useState<string>('')
   const [cart, setCart] = useState<Cart>({products: [], amount: 0})
   const [products, setProducts] = useRecoilState(productsState);
@@ -13,7 +13,7 @@ export default function CartContent({setNotifications: setNotification}: {setNot
     setProductName(e.target.value)
   }
 
-  const addToCart = () => {
+  const addToCart: () => void = () => {
     const findProduct = findProductFromProducts()
     let messages: string[] = []
     if (findProduct) {
@@ -27,7 +27,7 @@ export default function CartContent({setNotifications: setNotification}: {setNot
     }
   }
 
-  const calcAmount = () => {
+  const calcAmount: () => number = () => {
     if (cart.products.length > 0) {
       const reducer = (accumulator: number, currentValue: number) => accumulator + currentValue;
       return cart.products.map(product => product.price).reduce(reducer)
@@ -35,9 +35,22 @@ export default function CartContent({setNotifications: setNotification}: {setNot
     return 0
   }
 
-  function purchase (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    setCart({ products: [], amount: 0 })
+  function purchase (e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    if (validatePurchase()) {
+      setWallet(wallet - cart.amount)
+      setCart({ products: [], amount: 0 })
+    }
     return
+  }
+
+  function validatePurchase(): boolean {
+    let messages: string[] = []
+
+    if (wallet < cart.amount) {
+      setErrors([...messages, 'お財布のお金がたりません'])
+    }
+
+    return messages.length === 0
   }
 
   const findProductFromProducts = () => {

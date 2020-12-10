@@ -11,6 +11,7 @@ import Clock from "./components/lib/Clock";
 function App() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const clockRef: React.MutableRefObject<Clock> = useRef(Clock.Instance)
+  const [wallet, setWallet] = useState<number>(1000)
 
   return (
     <div className="App">
@@ -22,9 +23,9 @@ function App() {
       </div>
       <div>
         <ProductInput setNotifications={setNotifications} />
-        <CartContent setNotifications={setNotifications} />
+        <CartContent setNotifications={setNotifications} wallet={wallet} setWallet={setWallet} />
       </div>
-      <Bank clockRef={clockRef}/>
+      <Bank clockRef={clockRef} wallet={wallet} setWallet={setWallet}/>
     </div>
   );
 }
